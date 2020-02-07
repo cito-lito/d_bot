@@ -1,0 +1,35 @@
+zephyr/linker.cmd: \
+ /home/mmo/f446re_zephyr/zephyr/soc/arm/st_stm32/stm32f4/linker.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/arch/arm/cortex_m/scripts/linker.ld \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/autoconf.h \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/sections.h \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/section_tags.h \
+ /home/mmo/f446re_zephyr/zephyr/include/toolchain.h \
+ /home/mmo/f446re_zephyr/zephyr/include/toolchain/gcc.h \
+ /home/mmo/f446re_zephyr/zephyr/include/generated_dts_board.h \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/generated_dts_board_unfixed.h \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/generated_dts_board_unfixed.h.deprecated \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/generated_dts_board_fixups.h \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/linker-defs.h \
+ /home/mmo/f446re_zephyr/zephyr/include/sys/util.h \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/offsets.h \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/linker-tool.h \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/linker-tool-gcc.h \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/rel-sections.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/priv_stacks-text.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/kobject-text.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/common-rom.ld \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/snippets-rodata.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/priv_stacks-rom.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/kobject-rom.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/cplusplus-rom.ld \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/snippets-ram-sections.ld \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/snippets-noinit.ld \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/snippets-rwdata.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/common-ram.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/priv_stacks.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/kobject.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/priv_stacks-noinit.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/cplusplus-ram.ld \
+ /home/mmo/f446re_zephyr/build/zephyr/include/generated/snippets-sections.ld \
+ /home/mmo/f446re_zephyr/zephyr/include/linker/debug-sections.ld
