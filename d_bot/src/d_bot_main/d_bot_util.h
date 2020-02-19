@@ -1,4 +1,9 @@
-
+/**
+ * @file
+ * Author : Mario M.
+ * 
+ * @brief Public API for ...
+ */
 
 #ifndef D_BOT_UTIL_H
 #define D_BOT_UTIL_H
@@ -10,6 +15,7 @@
 #define PRIVATE static
 
 
-
+/*error handling*/
+enum error { E_OK = 0, E_FAIL };
 
 #endif /*D_BOT_UTIL_H*/

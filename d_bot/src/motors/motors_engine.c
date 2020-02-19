@@ -1,4 +1,6 @@
-/*
+/**
+ *  Author: Mario M.
+ * 
  * 
  */
 
@@ -9,176 +11,209 @@
 #include <sys/printk.h>
 #include <misc/printk.h>
 #include "motors_engine.h"
+#include "d_bot_util.h"
 
-static struct device *portb;
-//static struct device *pwm_2;
+/*this defines are not in header because they are only use here*/
 
-void go_forwards()
-{
-	gpio_pin_write(portb, RIGHT_FORWARDS, 1);
-	gpio_pin_write(portb, RIGHT_BACKWARDS, 0);
-	gpio_pin_write(portb, LEFT_FORWARDS, 1);
-	gpio_pin_write(portb, LEFT_BACKWARDS, 0);
-	k_sleep(100);
-	drive(stop);
-}
+/*gpio*/
+#define PORT_B "GPIOB" /*port B*/
+#define RIGHT_FORWARDS 1 /*PB_1*/
+#define LEFT_FORWARDS 14 /*PB_14*/
+#define RIGHT_BACKWARDS 15 /*PB_15*/
+#define LEFT_BACKWARDS 13 /*PB_13*/
+/*pwm*/
+#define PWM_DRIVER "PWM_2" /*pwm in Timer 2*/
+#define CH1_PWM 1 /*PA_0*/
+#define PERIOD 20000
+#define FAST_AND_FURIUS 20000
+#define NORMAL_SPEED 7000
 
-void go_backwards()
-{
-	gpio_pin_write(portb, RIGHT_FORWARDS, 0);
-	gpio_pin_write(portb, RIGHT_BACKWARDS, 1);
-	gpio_pin_write(portb, LEFT_FORWARDS, 0);
-	gpio_pin_write(portb, LEFT_BACKWARDS, 1);
-	k_sleep(100);
-	drive(stop);
-}
+/*device drivers*/
+PRIVATE struct device *portb;
+PRIVATE struct device *pwm_2;
 
-void go_rightwards()
-{
-	gpio_pin_write(portb, RIGHT_FORWARDS, 0);
-	gpio_pin_write(portb, RIGHT_BACKWARDS, 1);
-	gpio_pin_write(portb, LEFT_FORWARDS, 1);
-	gpio_pin_write(portb, LEFT_BACKWARDS, 0);
-	k_sleep(100);
-	drive(stop);
-}
+/*Privates Functions*/
 
-void go_leftwards()
-{
-	gpio_pin_write(portb, RIGHT_FORWARDS, 1);
-	gpio_pin_write(portb, RIGHT_BACKWARDS, 0);
-	gpio_pin_write(portb, LEFT_FORWARDS, 0);
-	gpio_pin_write(portb, LEFT_BACKWARDS, 1);
-	k_sleep(100);
-	drive(stop);
-}
-
-void brake()
-{
-	gpio_pin_write(portb, RIGHT_FORWARDS, 0);
-	gpio_pin_write(portb, RIGHT_BACKWARDS, 0);
-	gpio_pin_write(portb, LEFT_FORWARDS, 0);
-	gpio_pin_write(portb, LEFT_BACKWARDS, 0);
-}
-
-PRIVATE void init()
+/**
+ * @brief Init configuration.
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE s8_t init()
 {
 	portb = device_get_binding(PORT_B);
-
-	gpio_pin_configure(portb, RIGHT_FORWARDS, GPIO_DIR_OUT);
-	gpio_pin_configure(portb, RIGHT_BACKWARDS, GPIO_DIR_OUT);
-	gpio_pin_configure(portb, LEFT_FORWARDS, GPIO_DIR_OUT);
-	gpio_pin_configure(portb, LEFT_BACKWARDS, GPIO_DIR_OUT);
+	if (!portb) {
+		printk("Cannot find %s!\n", PORT_B);
+		return E_FAIL;
+	}
+	pwm_2 = device_get_binding(PWM_DRIVER);
+	if (!pwm_2) {
+		printk("Cannot find %s!\n", PWM_DRIVER);
+		return E_FAIL;
+	}
+	s8_t ret = E_OK; /*no error*/
+	ret |= gpio_pin_configure(portb, RIGHT_FORWARDS, GPIO_DIR_OUT);
+	ret |= gpio_pin_configure(portb, RIGHT_BACKWARDS, GPIO_DIR_OUT);
+	ret |= gpio_pin_configure(portb, LEFT_FORWARDS, GPIO_DIR_OUT);
+	ret |= gpio_pin_configure(portb, LEFT_BACKWARDS, GPIO_DIR_OUT);
+	return ret;
 }
 
-void init_motors()
+/**
+ * @brief Drive forwards.
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE s8_t drive_forwards()
 {
-	init();
-	drive(forwards);
-	drive(stop);
+	s8_t ret = E_OK; /*no error*/
+	ret |= gpio_pin_write(portb, RIGHT_FORWARDS, HIGH);
+	ret |= gpio_pin_write(portb, RIGHT_BACKWARDS, LOW);
+	ret |= gpio_pin_write(portb, LEFT_FORWARDS, HIGH);
+	ret |= gpio_pin_write(portb, LEFT_BACKWARDS, LOW);
+	return ret;
 }
-void drive(dir_t dir)
+
+/**
+ * @brief Drive backwards.
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE s8_t drive_backwards()
+{
+	s8_t ret = E_OK; /*no error*/
+	ret |= gpio_pin_write(portb, RIGHT_FORWARDS, LOW);
+	ret |= gpio_pin_write(portb, RIGHT_BACKWARDS, HIGH);
+	ret |= gpio_pin_write(portb, LEFT_FORWARDS, LOW);
+	ret |= gpio_pin_write(portb, LEFT_BACKWARDS, HIGH);
+	return ret;
+}
+
+/**
+ * @brief Drive rightwards.
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE s8_t drive_rightwards()
+{
+	s8_t ret = E_OK; /*no error*/
+	ret |= gpio_pin_write(portb, RIGHT_FORWARDS, LOW);
+	ret |= gpio_pin_write(portb, RIGHT_BACKWARDS, HIGH);
+	ret |= gpio_pin_write(portb, LEFT_FORWARDS, HIGH);
+	ret |= gpio_pin_write(portb, LEFT_BACKWARDS, LOW);
+	return ret;
+}
+
+/**
+ * @brief Drive leftwards.
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE s8_t drive_leftwards()
+{
+	s8_t ret = E_OK; /*no error*/
+	ret |= gpio_pin_write(portb, RIGHT_FORWARDS, HIGH);
+	ret |= gpio_pin_write(portb, RIGHT_BACKWARDS, LOW);
+	ret |= gpio_pin_write(portb, LEFT_FORWARDS, LOW);
+	ret |= gpio_pin_write(portb, LEFT_BACKWARDS, HIGH);
+	return ret;
+}
+
+/**
+ * @brief Decelerate and brake.
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE s8_t drive_brake()
+{
+	u32_t period = PERIOD;
+	u32_t pulse = NORMAL_SPEED;
+	do {
+		pulse -= 700;
+		if (pwm_pin_set_usec(pwm_2, CH1_PWM, period, pulse)) {
+			printk("pwm pin set fails\n");
+			return E_FAIL;
+		}
+		k_sleep(10);
+
+	} while (pulse > 1300);
+	if (pwm_pin_set_usec(pwm_2, CH1_PWM, period, 0)) {
+			printk("pwm pin set fails\n");
+			return E_FAIL;
+		}
+
+	s8_t ret = 0; /*no error*/
+	ret |= gpio_pin_write(portb, RIGHT_FORWARDS, LOW);
+	ret |= gpio_pin_write(portb, RIGHT_BACKWARDS, LOW);
+	ret |= gpio_pin_write(portb, LEFT_FORWARDS, LOW);
+	ret |= gpio_pin_write(portb, LEFT_BACKWARDS, LOW);
+	return ret;
+}
+
+/*Public Fucntions*/
+
+s8_t motors_init()
+{
+	return init();
+}
+
+s8_t speed(speed_t speed)
+{
+	switch (speed) {
+	case fast:
+		if (pwm_pin_set_usec(pwm_2, CH1_PWM, PERIOD,
+				     FAST_AND_FURIUS)) {
+			printk("pwm pin set fails\n");
+			return E_FAIL;
+		}
+		break;
+	case normal:
+		if (pwm_pin_set_usec(pwm_2, CH1_PWM, PERIOD,
+				     NORMAL_SPEED)) {
+			printk("pwm pin set fails\n");
+			return E_FAIL;
+		}
+	}
+	return E_OK; /*no error*/
+}
+
+s8_t drive(dir_t dir)
 {
 	switch (dir) {
 	case forwards:
-		go_forwards();
+		if (drive_forwards()) {
+			printk("drive error\n");
+			return E_FAIL;
+		}
 		break;
 	case backwards:
-		go_backwards();
+		if (drive_backwards()) {
+			printk("drive error\n");
+			return E_FAIL;
+		}
 		break;
 	case rightwards:
-		go_rightwards();
+		if (drive_rightwards()) {
+			printk("drive error\n");
+			return E_FAIL;
+		}
 		break;
 	case leftwards:
-		go_leftwards();
+		if (drive_leftwards()) {
+			printk("drive error\n");
+			return E_FAIL;
+		}
 		break;
 	case stop:
-		brake();
-		break;
-	default:
-		break;
+		if (drive_brake()) {
+			printk("drive error\n");
+			return E_FAIL;
+		}
 	}
+	return E_OK; /*no error*/
 }
-/* in microseconds */
-#define MIN_PERIOD (USEC_PER_SEC / 64U)
 
-/* in microseconds */
-#define MAX_PERIOD USEC_PER_SEC
 // void main(void)
 // {
-//     init();
+// 	printk("init\n");
+// 	motors_init();
 
-//     u32_t max_period;
-//     u32_t period;
-//     u8_t dir = 0U;
-
-//     printk("PWM demo app-blink LED\n");
-
-//     pwm_2 = device_get_binding(PWM_2pwm_2);
-//     if (!pwm_2)
-//     {
-//         printk("Cannot find %s!\n", PWM_2pwm_2);
-//         return;
-//     }
-
-//     /* In case the default MAX_PERIOD value cannot be set for some PWM
-// 	 * hardware, try to decrease the value until it fits, but no further
-// 	 * than to the value of MIN_PERIOD muliplied by four (to allow the
-// 	 * sample to actually show some blinking with changing frequency).
-// 	 */
-//     max_period = MAX_PERIOD;
-//     while (pwm_pin_set_usec(pwm_2, PWM_PIN,
-//                             max_period, max_period / 2U))
-//     {
-//         max_period /= 2U;
-//         if (max_period < (4U * MIN_PERIOD))
-//         {
-//             printk("This sample needs to set a period that is "
-//                    "not supported by the used PWM driver.");
-//             return;
-//         }
-//     }
-
-//     period = max_period;
-//     while (1)
-//     {
-//         if (pwm_pin_set_usec(pwm_2, PWM_PIN,
-//                              period, period / 2U))
-//         {
-//             printk("pwm pin set fails\n");
-//             return;
-//         }
-
-//         if (dir)
-//         {
-//             period *= 2U;
-
-//             if (period > max_period)
-//             {
-//                 dir = 0U;
-//                 period = max_period;
-//             }
-//         }
-//         else
-//         {
-//             period /= 2U;
-
-//             if (period < MIN_PERIOD)
-//             {
-//                 dir = 1U;
-//                 period = MIN_PERIOD;
-//             }
-//         }
-
-//         k_sleep(MSEC_PER_SEC * 4U);
-//         // while (1)
-//         // {
-//         //     // drive(forwards);
-//         //     // k_sleep(1000);
-//         //     // drive(stop);
-//         //     // // drive(backwards);
-//         //     // k_sleep(2000);
-//         //     // drive(stop);
-//         // }
-//     }
+// 	speed(normal);
+// 	drive_forwards();
+// 	k_sleep(3000);
+// 	drive(stop);
 // }

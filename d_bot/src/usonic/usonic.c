@@ -2,100 +2,98 @@
 #include <device.h>
 #include <drivers/gpio.h>
 #include <sys/printk.h>
-//#include <misc/printk.h>
+#include "d_bot_util.h"
 
 #define PORT_A "GPIOA"
 
-#define SONIC_PORT PORT_A
-#define SONIC_TRIG 8
-#define SONIC_ECHO 9
+#define TRIGGER 8 /*PA_8*/
+#define ECHO 9 /*PA_9*/
 
-#define ECHO_FLAGS                                                             \
-	GPIO_DIR_IN | GPIO_PUD_PULL_DOWN | GPIO_INT | GPIO_INT_EDGE |          \
-		GPIO_INT_DOUBLE_EDGE
+/**
+ * speed of sound is 343 m/s: 0.343/us.
+ * Distance = Time * speed
+ * Distance = us * (0.0343 / 2) // Divided by 2 because 
+ * echo need to go and bounce back.
+ */
+#define DISTANCE_CM(x) ((u32_t)(x * 0.01715f))
 
-#define NS_TO_US(n) ((((n / 10) / 10) / 10))
+#define INT_FLAGS                                                              \
+	(GPIO_DIR_IN | GPIO_INT | GPIO_INT_EDGE | GPIO_INT_DOUBLE_EDGE)
 
-static struct gpio_callback gpio_cb;
+PRIVATE struct gpio_callback gpio_cb;
 
-static uint32_t count_cb = 0U;
-static uint32_t start_time_cb = 0U;
-static uint32_t stop_time_cb = 0U;
-static uint32_t cycles_spent_cb = 0U;
-static uint32_t us_spent_cb = 0U;
-static uint32_t length_mm_cb = 0U;
+PRIVATE u32_t count_cb;
+PRIVATE u32_t start_cycles_cb;
+PRIVATE u32_t stop_cycles_cb;
+PRIVATE u32_t cycles_spent_cb;
+PRIVATE u32_t echo_us_cb;
 
-static struct device *sonic_trig;
-static struct device *sonic_echo;
+PRIVATE struct device *a_port;
 
-void echo_time_ns_callback(struct device *gpio, struct gpio_callback *cb,
-			   uint32_t pins)
+/**
+ * Interrupt to count the time (in us) that an Echo signal
+ * needs to go and bounce back.
+ */
+void echo_us_callback(struct device *gpio, struct gpio_callback *cb, u32_t pins)
 {
 	if (0 == (count_cb % 2)) {
-		start_time_cb = k_cycle_get_32();
+		start_cycles_cb = k_cycle_get_32();
 		count_cb++;
 	} else if (1 == (count_cb % 2)) {
-		stop_time_cb = k_cycle_get_32();
-		cycles_spent_cb = stop_time_cb - start_time_cb;
-		us_spent_cb = k_us_to_cyc_floor32(cycles_spent_cb);
-		length_mm_cb = (cycles_spent_cb * 0.001657f);
+		stop_cycles_cb = k_cycle_get_32();
+		cycles_spent_cb = stop_cycles_cb - start_cycles_cb;
+		echo_us_cb = k_cyc_to_us_floor32(cycles_spent_cb);
 		count_cb++;
 	}
 }
 
-void init()
+/**
+ * @brief Init configuration.
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE u8_t init()
 {
-	sonic_trig = device_get_binding(SONIC_PORT);
-	if (!sonic_trig) {
-		printk("Device get binding on sonic trigger device failed!\n");
+	a_port = device_get_binding(PORT_A);
+	if (!a_port) {
+		printk("Cannot find %s!\n", PORT_A);
+		return E_FAIL;
 	}
-
-	sonic_echo = device_get_binding(SONIC_PORT);
-	if (!sonic_echo) {
-		printk("Device get binding on sonic echo device failed!\n");
-	}
-
-	if (!(0 == gpio_pin_configure(sonic_trig, SONIC_TRIG, GPIO_DIR_OUT))) {
-		printk("GPIO pin configure failed!\n");
-	}
-
-	if (!(0 == gpio_pin_configure(sonic_echo, SONIC_ECHO, ECHO_FLAGS))) {
-		printk("GPIO pin configure failed!\n");
-	}
-
-	gpio_init_callback(&gpio_cb, echo_time_ns_callback, BIT(SONIC_ECHO));
-
-	if (!(0 == gpio_add_callback(sonic_echo, &gpio_cb))) {
-		printk("GPIO add callback on sonic echo device failed!\n");
-	}
-
-	if (!(0 == gpio_pin_enable_callback(sonic_echo, SONIC_ECHO))) {
-		printk("GPIO pin enable callback on sonic echo edevice failed!\n");
-	}
+	s8_t ret = E_OK; /*no error*/
+	ret |= gpio_pin_configure(a_port, TRIGGER, GPIO_DIR_OUT);
+	ret |= gpio_pin_configure(a_port, ECHO, INT_FLAGS);
+	/*interrups*/
+	gpio_init_callback(&gpio_cb, echo_us_callback, BIT(ECHO));
+	ret |= gpio_add_callback(a_port, &gpio_cb);
+	ret |= gpio_pin_enable_callback(a_port, ECHO);
+	return ret;
 }
 
-int32_t odm_sonic_value_get()
+u8_t usonic_init()
+{
+	return init();
+}
+
+u32_t usonic_distance_cm_get()
 {
 	u32_t val = 0;
-
-	gpio_pin_write(sonic_trig, SONIC_TRIG, 0);
+	gpio_pin_write(a_port, TRIGGER, LOW);
 	k_usleep(60);
-	gpio_pin_write(sonic_trig, SONIC_TRIG, 1);
+	gpio_pin_write(a_port, TRIGGER, HIGH);
 
 	do {
-		if (!(0 == gpio_pin_read(sonic_echo, SONIC_ECHO, &val)))
-			printk("GPIO pin read failed!\n");
+		if (gpio_pin_read(a_port, ECHO, &val))
+			return E_FAIL;
 	} while (val);
 
-	return (u32_t)length_mm_cb;
+	return (u32_t)DISTANCE_CM(echo_us_cb);
 }
-void main()
-{
-	printk("starting\n");
-	init();
-	while (1) {
-		u32_t a = odm_sonic_value_get();
-		printk("%d\n", a);
-		k_sleep(100);
-	}
-}
+// void main()
+// {
+// 	printk("starting\n");
+// 	init();
+// 	while (1) {
+// 		u32_t a = usonic_distance_cm_get();
+// 		printk("%d\n", a);
+// 		k_sleep(100);
+// 	}
+// }

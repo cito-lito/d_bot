@@ -13,7 +13,9 @@
         "random": "cpp",
         "*.tcc": "cpp",
         "math.h": "c",
-        "zsl.h": "c"
+        "zsl.h": "c",
+        "errno.h": "c",
+        "reent.h": "c"
     },
     "cmake.configureOnOpen": false
 }
