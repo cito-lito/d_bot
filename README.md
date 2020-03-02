@@ -1,5 +1,5 @@
-# BWP-WS19 Bachelor Wahlprojekt (Code Name: ITS-E)
-![d_bot](https://gitlab.cs.hs-rm.de/mmait001/d_bot/masterlogo.jpg)
+# Embedded Systems Project WS 2020 (Code Name: ITS-E)
+![d_bot](https://gitlab.cs.hs-rm.de/mmait001/d_bot/-/blob/master/logo.jpg)
 
 
 
