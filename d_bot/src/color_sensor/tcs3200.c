@@ -1,6 +1,8 @@
 /**
- *  Author: Mario M, based on Arduino Code 
+ *  Author: Mario M
  * 
+ * @brief This program determines the color read from the color sensor 
+ * by counting the time of reflection of a color.
  * 
  */
 
@@ -11,69 +13,79 @@
 #include "d_bot_util.h"
 #include "tcs3200.h"
 
-#define A_PORT "GPIOA" //
+/*this defines are not in header because they are only use here*/
+#define A_PORT "GPIOA" /*port A*/
 
 /*Sensor Pins*/
-#define S0 1
-#define S1 4
+#define S0 1 /*PA 1*/
+#define S1 4 /*PA_4*/
+#define S2 13 /*PA_13*/
+#define S3 14 /*PA_14*/
+#define S_OUT 15 /*PA_15*/
 
-#define S2 13
-#define S3 14
-#define S_OUT 15
-
-static u32_t red, green, blue;
-static struct device *port_a;
-
-static struct gpio_callback gpio_cb;
-
+/*Interrups Flags*/
 #define INT_FLAGS                                                              \
 	(GPIO_DIR_IN | GPIO_INT | GPIO_INT_EDGE | GPIO_INT_DOUBLE_EDGE)
 
-void us_callback(struct device *gpio, struct gpio_callback *cb, uint32_t pins);
+/*Gloval( for this file ) variables*/
+PRIVATE u32_t red, green, blue;
+PRIVATE u32_t call_count_cb;
+PRIVATE u32_t start_cycles_cb;
+PRIVATE u32_t stop_cycles_cb;
+PRIVATE u32_t cycles_spent_cb;
+PRIVATE u32_t us_spent_cb;
 
-PRIVATE void init()
+/*device drivers*/
+PRIVATE struct device *port_a;
+
+/*gpio callback struct*/
+PRIVATE struct gpio_callback gpio_cb;
+
+/******************Interrups***************************/
+
+void us_callback(struct device *gpio, struct gpio_callback *cb, u32_t pins);
+
+/******************Privates Functions*****************/
+
+PRIVATE s8_t init();
+PRIVATE u32_t us_get(filter_t filter);
+
+/**
+ * @brief Init configuration.
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE s8_t init()
 {
 	port_a = device_get_binding(A_PORT);
-
-	gpio_pin_configure(port_a, S0, GPIO_DIR_OUT);
-	gpio_pin_configure(port_a, S1, GPIO_DIR_OUT);
-	gpio_pin_configure(port_a, S2, GPIO_DIR_OUT);
-	gpio_pin_configure(port_a, S3, GPIO_DIR_OUT);
-
-	// 20 ppor ciento
-	gpio_pin_write(port_a, S0, 1);
-	gpio_pin_write(port_a, S1, 0);
-
-	gpio_pin_configure(port_a, S_OUT, INT_FLAGS);
-	gpio_init_callback(&gpio_cb, us_callback, BIT(S_OUT));
-	gpio_add_callback(port_a, &gpio_cb);
-	gpio_pin_enable_callback(port_a, S_OUT);
-}
-static uint32_t count_cb;
-static uint32_t start_cycles_cb;
-static uint32_t stop_cycles_cb;
-static uint32_t cycles_spent_cb;
-static uint32_t us_spent_cb;
-
-void us_callback(struct device *gpio, struct gpio_callback *cb, uint32_t pins)
-{
-	if (0 == (count_cb % 2)) {
-		start_cycles_cb = k_cycle_get_32();
-		count_cb++;
-	} else if (1 == (count_cb % 2)) {
-		stop_cycles_cb = k_cycle_get_32();
-		cycles_spent_cb = stop_cycles_cb - start_cycles_cb;
-		us_spent_cb = k_cyc_to_us_floor32(cycles_spent_cb);
-		count_cb++;
+	if (!port_a) {
+		printk("Cannot find %s!\n", A_PORT);
+		return E_FAIL;
 	}
+	s8_t ret = E_OK; /*no error*/
+	ret |= gpio_pin_configure(port_a, S0, GPIO_DIR_OUT);
+	ret |= gpio_pin_configure(port_a, S1, GPIO_DIR_OUT);
+	ret |= gpio_pin_configure(port_a, S2, GPIO_DIR_OUT);
+	ret |= gpio_pin_configure(port_a, S3, GPIO_DIR_OUT);
+
+	/*set output frequency scaling (20%)*/
+	ret |= gpio_pin_write(port_a, S0, 1);
+	ret |= gpio_pin_write(port_a, S1, 0);
+
+	/*init interrups*/
+	ret |= gpio_pin_configure(port_a, S_OUT, INT_FLAGS);
+	gpio_init_callback(&gpio_cb, us_callback, BIT(S_OUT));
+	ret |= gpio_add_callback(port_a, &gpio_cb);
+	ret |= gpio_pin_enable_callback(port_a, S_OUT);
+
+	return ret;
 }
 
-void color_sensor_init()
-{
-	init();
-}
-
-u32_t us_get(filter_t filter)
+/**
+ * @brief Get the time reflection in us depending on the color filter,
+ * distance and color of the surface. 
+ * @return 0 if successful, not 0 on failure.
+ */
+PRIVATE u32_t us_get(filter_t filter)
 {
 	switch (filter) {
 	case red_f:
@@ -104,7 +116,37 @@ u32_t us_get(filter_t filter)
 	return (us_spent_cb);
 }
 
-u8_t color_get()
+
+/******************Interrups*****************/
+
+/**
+ * @brief Counts the time reflection depending on
+ * the color surface and distance
+ */
+void us_callback(struct device *gpio, struct gpio_callback *cb, u32_t pins)
+{
+	if (0 == (call_count_cb % 2)) {
+		/*Read the hardware clock*/
+		start_cycles_cb = k_cycle_get_32();
+		call_count_cb++;
+	} else if (1 == (call_count_cb % 2)) {
+		/*Read the hardware clock*/
+		stop_cycles_cb = k_cycle_get_32();
+		cycles_spent_cb = stop_cycles_cb - start_cycles_cb;
+		/*Convert hardware cycles to microseconds*/
+		us_spent_cb = k_cyc_to_us_floor32(cycles_spent_cb);
+		call_count_cb++;
+	}
+}
+
+/****************Public Fucntions*********************/
+
+s8_t color_sensor_init()
+{
+	return init();
+}
+
+color_t color_get()
 {
 	red = us_get(red_f);
 	k_sleep(10);
@@ -113,33 +155,10 @@ u8_t color_get()
 	blue = us_get(blue_f);
 	k_sleep(10);
 	if (red > 80 && green < 35 && green > 20) {
-		return R;
+		return RED;
 	} else if (red < 40 && blue < 40 && green < 20) {
-		return B;
+		return BLUE;
 	} else {
 		return CLEAR;
 	}
 }
-// void main(void)
-// {
-// 	init();
-// 	while (1) {
-// 		red = us_get(red_f);
-
-// 		k_sleep(100);
-// 		green = us_get(green_f);
-
-// 		k_sleep(100);
-// 		blue = us_get(blue_f);
-
-// 		k_sleep(100);
-
-// 		if (red > 80 && green < 35 && green > 20) {
-// 			printk("RED detected\n");
-// 		} else if (red < 40 && blue < 40 && green < 20) {
-// 			printk("BLUE detected\n");
-// 		} else {
-// 			printk("NO COLORs \n");
-// 		}
-// 	}
-// }

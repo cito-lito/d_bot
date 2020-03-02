@@ -2,7 +2,7 @@
  * @file
  * Author : Mario M.
  * 
- * @brief Public API for ...
+ * @brief
  */
 
 #ifndef D_BOT_UTIL_H

@@ -1,130 +1,92 @@
 /**
- *  Author: Mario M.
+ *  Author: Mario M
  * 
+ * @brief This program implements the drive to goal algorithm
  * 
  */
 
+#include <zephyr.h>
+#include <device.h>
+#include <drivers/gpio.h>
 #include "d_bot_util.h"
 #include "motors_engine.h"
 #include "tcs3200.h"
 #include "ir_sensors.h"
 #include "usonic.h"
-#define N 3
-#define K 3
-void init()
-{
-	motors_init();
-	k_sleep(100);
-	usonic_init();
-	k_sleep(100);
-	ir_sensors_init();
-	k_sleep(100);
-	color_sensor_init();
-	k_sleep(100);
-}
+#include "behavior.h"
 
-void init_setups()
+PRIVATE s8_t d_boot_init();
+PRIVATE s8_t find_destination_node(u8_t n, u8_t k);
+
+PRIVATE s8_t d_boot_init()
 {
+	s8_t ret = E_OK;
+
+	ret |= motors_init();
+	k_sleep(100);
+
+	ret |= usonic_init();
+	k_sleep(100);
+	ret |= ir_sensors_init();
+	k_sleep(100);
+
+	ret |= color_sensor_init();
+	k_sleep(100);
+
+	/*set speed*/
 	speed(normal);
-}
-
-u8_t mapN[N] = { 0, 1, 2 };
-u8_t mapK[K] = { 0, 1, 2 };
-
-u8_t n_counter = 0;
-
-
-void follow_line()
-{
-	drive(forwards);
-	k_sleep(10);
-	if (ir_sensor_right()) {
-		drive(rightwards);
-		k_sleep(20);
-	}
-
-	if (ir_sensor_left()) {
-		drive(leftwards);
-		k_sleep(20);
-	}
-}
-
-void wait_color_change()
-{
-	for (;;) {
-		if (color_get() == B) {
-			printk("B there\n");
-			follow_line();
-			k_sleep(10);
-		} else {
-			break;
-		}
-	}
-}
-void find_N(u8_t n)
-{
-	speed(normal);
-	while ((mapN[n_counter]) < n) {
-		follow_line();
-		while(usonic_distance_cm_get() < 20){
-			drive(stop);
-		}
-		speed(normal);
-		follow_line();
-		if (color_get() == B && (n_counter % 2)) {
-			printk("impar %d\n", n_counter);
-			follow_line();
-			wait_color_change();
-		}
-		printk("main: %d\n", n_counter);
-		follow_line();
-		if (color_get() == B) {
-			//printk("B detected\n");
-			n_counter++;
-			printk("B detected : %d\n", n_counter);
-			break;
-		}
-	}
-	drive(stop);
 	k_sleep(100);
+
+	return ret;
 }
 
-void turn_right()
+/**
+ * @brief given 2 points, find the destination point.
+ * first drive in Y+, then in X+
+ */
+PRIVATE s8_t find_destination_node(u8_t n, u8_t k)
 {
-	speed(normal);
-	while (1) {
-		drive(rightwards);
-		if (ir_sensor_left()) {
-			printk("r there\n");
-			drive(stop);
-			break;
-		}
+	if (n > N || k > K) {
+		printk("ERROR: Enter a valid point\n");
+		return E_FAIL;
 	}
-	speed(normal);
-}
+	/*set node counter to 0*/
+	node_counter = 0;
 
-void main()
-{
-	init();
-	init_setups();
-
-	// while (1) {
-	// 	printk("L = %d\n", ir_sensor_left());
-	// 	printk("R = %d\n", ir_sensor_right());
-	// 	printk("color =  %d\n", color_get());
-	// 	k_sleep(100);
-	// }
-
-	while (n_counter < 2) {
-		find_N(2);
+	/*find fírst node*/
+	while (node_counter < n) {
+		find_node(n);
 	}
-	printk("turn right\n");
-	printk(" %d  ", ir_sensor_right());
-	
+
+	/*turn right when first node has been found*/
 	turn_right();
 
-	n_counter = 0;
-	while (n_counter < 2) {
-		find_N(2);
+	/*set node counter to 0*/
+	node_counter = 0;
+
+	/*finde second node*/
+	while (node_counter < k) {
+		find_node(k);
 	}
+	return E_OK;
+}
+
+int main(void)
+{
+	if (d_boot_init()) {
+		return E_FAIL;
+	}
+
+	/*find the node 2, 2
+	*
+	*	2	1  -2-	*..... 
+	*
+	*	1	1	2	*.....
+	*	
+	*	0	1	2	*.....
+	*	
+	*/
+	find_destination_node(2, 2);
+
+	return E_OK;
 }

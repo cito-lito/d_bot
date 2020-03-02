@@ -1,7 +1,8 @@
 /**
  *  Author: Mario M.
  * 
- * 
+ * @brief This program enable the communication with the DC motors
+ *  and let us set the drive directions
  */
 
 #include <zephyr.h>
@@ -32,7 +33,14 @@
 PRIVATE struct device *portb;
 PRIVATE struct device *pwm_2;
 
-/*Privates Functions*/
+/******************Privates Functions*****************/
+
+PRIVATE s8_t init();
+PRIVATE s8_t drive_forwards();
+PRIVATE s8_t drive_backwards();
+PRIVATE s8_t drive_rightwards();
+PRIVATE s8_t drive_leftwards();
+PRIVATE s8_t drive_brake();
 
 /**
  * @brief Init configuration.
@@ -132,19 +140,21 @@ PRIVATE s8_t drive_brake()
 
 	} while (pulse > 1300);
 	if (pwm_pin_set_usec(pwm_2, CH1_PWM, period, 0)) {
-			printk("pwm pin set fails\n");
-			return E_FAIL;
-		}
+		printk("pwm pin set fails\n");
+		return E_FAIL;
+	}
 
 	s8_t ret = 0; /*no error*/
 	ret |= gpio_pin_write(portb, RIGHT_FORWARDS, LOW);
 	ret |= gpio_pin_write(portb, RIGHT_BACKWARDS, LOW);
 	ret |= gpio_pin_write(portb, LEFT_FORWARDS, LOW);
 	ret |= gpio_pin_write(portb, LEFT_BACKWARDS, LOW);
+
+	speed(normal);
 	return ret;
 }
 
-/*Public Fucntions*/
+/****************Public Fucntions*********************/
 
 s8_t motors_init()
 {
@@ -155,15 +165,13 @@ s8_t speed(speed_t speed)
 {
 	switch (speed) {
 	case fast:
-		if (pwm_pin_set_usec(pwm_2, CH1_PWM, PERIOD,
-				     FAST_AND_FURIUS)) {
+		if (pwm_pin_set_usec(pwm_2, CH1_PWM, PERIOD, FAST_AND_FURIUS)) {
 			printk("pwm pin set fails\n");
 			return E_FAIL;
 		}
 		break;
 	case normal:
-		if (pwm_pin_set_usec(pwm_2, CH1_PWM, PERIOD,
-				     NORMAL_SPEED)) {
+		if (pwm_pin_set_usec(pwm_2, CH1_PWM, PERIOD, NORMAL_SPEED)) {
 			printk("pwm pin set fails\n");
 			return E_FAIL;
 		}
@@ -171,7 +179,7 @@ s8_t speed(speed_t speed)
 	return E_OK; /*no error*/
 }
 
-s8_t drive(dir_t dir)
+s8_t drive(direction_t dir)
 {
 	switch (dir) {
 	case forwards:

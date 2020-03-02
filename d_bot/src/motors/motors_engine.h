@@ -2,23 +2,24 @@
  * @file
  * Author : Mario M.
  * 
- * @brief Public API for ...
+ * @brief Public API for the control of the DC Motors
  */
 
 #ifndef MOTORS_ENGINE_H
 #define MOTORS_ENGINE_H
 #include <zephyr.h>
+
 /*drive directions*/
-typedef enum direction {
+typedef enum {
 	forwards = 0,
 	backwards,
 	rightwards,
 	leftwards,
 	stop
-} dir_t;
+} direction_t;
 
 /*spped of motors*/
-typedef enum speed { normal = 0, fast } speed_t;
+typedef enum { normal = 0, fast } speed_t;
 
 /**
  * @brief Motors init.
@@ -38,6 +39,6 @@ s8_t speed(speed_t speed);
  * @param dir: Directions and stop.
  * @return 0 if successful, not 0 on failure.
  */
-s8_t drive(dir_t dir);
+s8_t drive(direction_t dir);
 
 #endif /*MOTORS_ENGINE_H*/

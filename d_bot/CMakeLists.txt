@@ -18,6 +18,7 @@ include_directories("${CMAKE_SOURCE_DIR}/src/d_bot_main")
 target_sources(app 
 		PRIVATE src/motors/motors_engine.c
 		PRIVATE src/d_bot_main/d_bot_main.c
+		PRIVATE src/d_bot_main/behavior.c
 		PRIVATE src/ir_sensors/ir_sensors.c
 		PRIVATE src/color_sensor/tcs3200.c
 		PRIVATE src/usonic/usonic.c

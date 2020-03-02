@@ -15,7 +15,8 @@
         "math.h": "c",
         "zsl.h": "c",
         "errno.h": "c",
-        "reent.h": "c"
+        "reent.h": "c",
+        "behavior.h": "c"
     },
     "cmake.configureOnOpen": false
 }
