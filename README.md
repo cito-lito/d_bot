@@ -1,5 +1,5 @@
-# Embedded Systems Project WS 2020 (Code Name: ITS-E)
-![d_bot](https://gitlab.cs.hs-rm.de/mmait001/d_bot/-/blob/master/logo.jpg)
+# Embedded Systems Project WS 2020 
+(https://gitlab.cs.hs-rm.de/mmait001/d_bot/-/blob/master/logo.jpg)
 
 
 
