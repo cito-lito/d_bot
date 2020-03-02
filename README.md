@@ -7,7 +7,4 @@
 
 Overview
 ********
-
-The following System can be found here.
-The Operating System Zephyr and the Tasks of the Project ITS_E developed by ??? in line with the University "Hochschule Rhein Main".
-  
+This is the source code of the Embedded System Project, code name: d_bot
