@@ -1,5 +1,5 @@
 # BWP-WS19 Bachelor Wahlprojekt (Code Name: ITS-E)
-![d_bot](https://gitlab.cs.hs-rm.de/mmait001/d_bot/-/tree/masterlogo.jpg)
+![d_bot](https://gitlab.cs.hs-rm.de/mmait001/d_bot/masterlogo.jpg)
 
 
 
