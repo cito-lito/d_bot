@@ -44,7 +44,7 @@ void follow_line()
 
 void turn_right()
 {
-	//gpio_pin_disable_callback(port_a, IR_RIGTH);
+	//disable_ir_sensors_interrupts();
 	while (1) {
 		drive(rightwards);
 		if (ir_sensor_left()) {
@@ -52,7 +52,7 @@ void turn_right()
 			break;
 		}
 	}
-	//gpio_pin_enable_callback(port_a, IR_RIGTH);
+	//enable_ir_sensors_interrupts();
 }
 
 void wait_color_change()

@@ -30,6 +30,10 @@ void ir_left_int(struct device *port_a, struct gpio_callback *cb, u32_t pin);
  */
 void ir_right_int(struct device *port_a, struct gpio_callback *cb, u32_t pin);
 
+s8_t enable_ir_sensors_interrupts();
+
+s8_t disable_ir_sensors_interrupts();
+
 /****************Public Fucntions************/
 
 /**

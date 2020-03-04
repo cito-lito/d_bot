@@ -32,10 +32,6 @@ struct gpio_callback gpio_cb_r;
 struct gpio_callback gpio_cb_l;
 
 
-// // /******************Interrups*****************/
-// void ir_left_int(struct device *port_a, struct gpio_callback *cb, u32_t pin);
-// void ir_right_int(struct device *port_a, struct gpio_callback *cb, u32_t pin);
-
 /******************Privates Functions*****************/
 PRIVATE u8_t init();
 PRIVATE u8_t ir_left();
@@ -107,7 +103,24 @@ u8_t ir_sensor_right()
 	return ir_right();
 }
 
-// /******************Interrups*****************/
+/******************Interrups*****************/
+
+// s8_t disable_ir_sensors_interrupts()
+// {
+// 	s8_t ret = E_OK;
+// 	ret |= gpio_pin_disable_callback(port_a, IR_RIGTH);
+// 	ret |= gpio_pin_disable_callback(port_a, IR_LEFT);
+// 	return ret;
+// }
+
+// s8_t enable_ir_sensors_interrupts()
+// {
+// 	s8_t ret = E_OK;
+// 	ret |= gpio_pin_enable_callback(port_a, IR_RIGTH);
+// 	ret |= gpio_pin_enable_callback(port_a, IR_LEFT);
+// 	return ret;
+// }
+
 // void ir_left_int(struct device *port_a, struct gpio_callback *cb, u32_t pin)
 // {
 // 	drive(leftwards);
