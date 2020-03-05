@@ -24,6 +24,8 @@ u8_t node_counter;
 u8_t map_nodes_n[N] = { 0, 1, 2 };
 u8_t map_nodes_k[K] = { 0, 1, 2 };
 
+direction_flag_t dir_t = FORWARDS;
+
 // void follow_line()
 // {
 // 	drive(forwards);
@@ -39,11 +41,9 @@ u8_t map_nodes_k[K] = { 0, 1, 2 };
 // 	}
 // }
 
-
-
 void follow_line()
 {
-	direction_flag_t dir_t = FORWARDS;
+	dir_t = FORWARDS;
 	drive(forwards);
 	k_sleep(10);
 	switch (dir_t) {
