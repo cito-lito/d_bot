@@ -5,14 +5,12 @@
 
 **d_bot Project**
 
-Overview
-********
+Overview:
 This is the source code of the Embedded System Project, code name: d_bot
 
 
-#Demo Videos
-**********
+#Demo Videos:
 
-https://youtu.be/d9CEZ9sfACA
+[Without Obstacle]https://youtu.be/d9CEZ9sfACA
 
-https://youtu.be/VZWVzdQHuu4
+[With Obstacle]https://youtu.be/VZWVzdQHuu4
