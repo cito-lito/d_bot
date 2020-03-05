@@ -14,6 +14,7 @@
 
 #define PRIVATE static
 typedef enum { FORWARDS, LEFTWARDS, RIGHTWARDS } direction_flag_t;
+extern direction_flag_t dir_t;
 
 /*error handling*/
 enum error { E_OK = 0, E_FAIL };
