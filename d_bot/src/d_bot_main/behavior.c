@@ -21,30 +21,46 @@
 u8_t blue_flag;
 u8_t node_counter;
 
-
 u8_t map_nodes_n[N] = { 0, 1, 2 };
 u8_t map_nodes_k[K] = { 0, 1, 2 };
+
+// void follow_line()
+// {
+// 	drive(forwards);
+// 	k_sleep(10);
+// 	if (ir_sensor_right()) {
+// 		drive(rightwards);
+// 		k_sleep(10);
+// 	}
+
+// 	if (ir_sensor_left()) {
+// 		drive(leftwards);
+// 		k_sleep(10);
+// 	}
+// }
+
 
 
 void follow_line()
 {
+	direction_flag_t dir_t = FORWARDS;
 	drive(forwards);
 	k_sleep(10);
-	if (ir_sensor_right()) {
+	switch (dir_t) {
+	case RIGHTWARDS:
 		drive(rightwards);
 		k_sleep(10);
-	}
-
-	if (ir_sensor_left()) {
+		break;
+	case LEFTWARDS:
 		drive(leftwards);
 		k_sleep(10);
+		break;
 	}
 }
 
-
 void turn_right()
 {
-	//disable_ir_sensors_interrupts();
+	disable_ir_sensors_interrupts();
 	while (1) {
 		drive(rightwards);
 		if (ir_sensor_left()) {
@@ -52,7 +68,7 @@ void turn_right()
 			break;
 		}
 	}
-	//enable_ir_sensors_interrupts();
+	enable_ir_sensors_interrupts();
 }
 
 void wait_color_change()
@@ -92,7 +108,6 @@ void find_node(u8_t n)
 	}
 	drive(stop);
 }
-
 
 /*Not working with interups*/
 // void follow_line()

@@ -13,7 +13,7 @@
 #define LOW 0  /*logic low ~0V to ~1V*/
 
 #define PRIVATE static
-
+typedef enum { FORWARDS, LEFTWARDS, RIGHTWARDS } direction_flag_t;
 
 /*error handling*/
 enum error { E_OK = 0, E_FAIL };

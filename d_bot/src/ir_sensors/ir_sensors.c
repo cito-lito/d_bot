@@ -50,19 +50,19 @@ PRIVATE u8_t init()
 	}
 	s8_t ret = E_OK; /*no error*/
 
-	ret |= gpio_pin_configure(port_a, IR_LEFT, GPIO_DIR_IN);
-	ret |= gpio_pin_configure(port_a, IR_RIGTH, GPIO_DIR_IN);
+	// ret |= gpio_pin_configure(port_a, IR_LEFT, GPIO_DIR_IN);
+	// ret |= gpio_pin_configure(port_a, IR_RIGTH, GPIO_DIR_IN);
 
-	// /*init interrups*/
-	// ret |= gpio_pin_configure(port_a, IR_LEFT, INT_FLAGS);
-	// gpio_init_callback(&gpio_cb_l, ir_left_int, BIT(IR_LEFT));
-	// ret |= gpio_add_callback(port_a, &gpio_cb_l);
-	// ret |= gpio_pin_enable_callback(port_a, IR_LEFT);
+	/*init interrups*/
+	ret |= gpio_pin_configure(port_a, IR_LEFT, INT_FLAGS);
+	gpio_init_callback(&gpio_cb_l, ir_left_int, BIT(IR_LEFT));
+	ret |= gpio_add_callback(port_a, &gpio_cb_l);
+	ret |= gpio_pin_enable_callback(port_a, IR_LEFT);
 
-	// ret |= gpio_pin_configure(port_a, IR_RIGTH, INT_FLAGS);
-	// gpio_init_callback(&gpio_cb_r, ir_right_int, BIT(IR_RIGTH));
-	// ret |= gpio_add_callback(port_a, &gpio_cb_r);
-	// ret |= gpio_pin_enable_callback(port_a, IR_RIGTH);
+	ret |= gpio_pin_configure(port_a, IR_RIGTH, INT_FLAGS);
+	gpio_init_callback(&gpio_cb_r, ir_right_int, BIT(IR_RIGTH));
+	ret |= gpio_add_callback(port_a, &gpio_cb_r);
+	ret |= gpio_pin_enable_callback(port_a, IR_RIGTH);
 	return ret;
 }
 
@@ -105,34 +105,34 @@ u8_t ir_sensor_right()
 
 /******************Interrups*****************/
 
-// s8_t disable_ir_sensors_interrupts()
-// {
-// 	s8_t ret = E_OK;
-// 	ret |= gpio_pin_disable_callback(port_a, IR_RIGTH);
-// 	ret |= gpio_pin_disable_callback(port_a, IR_LEFT);
-// 	return ret;
-// }
+s8_t disable_ir_sensors_interrupts()
+{
+	s8_t ret = E_OK;
+	ret |= gpio_pin_disable_callback(port_a, IR_RIGTH);
+	ret |= gpio_pin_disable_callback(port_a, IR_LEFT);
+	return ret;
+}
 
-// s8_t enable_ir_sensors_interrupts()
-// {
-// 	s8_t ret = E_OK;
-// 	ret |= gpio_pin_enable_callback(port_a, IR_RIGTH);
-// 	ret |= gpio_pin_enable_callback(port_a, IR_LEFT);
-// 	return ret;
-// }
+s8_t enable_ir_sensors_interrupts()
+{
+	s8_t ret = E_OK;
+	ret |= gpio_pin_enable_callback(port_a, IR_RIGTH);
+	ret |= gpio_pin_enable_callback(port_a, IR_LEFT);
+	return ret;
+}
 
-// void ir_left_int(struct device *port_a, struct gpio_callback *cb, u32_t pin)
-// {
-// 	drive(leftwards);
-// 	k_busy_wait(100);
-// 	// drive(forwards);
+void ir_left_int(struct device *port_a, struct gpio_callback *cb, u32_t pin)
+{
+	drive(leftwards);
+	k_busy_wait(100);
+	// drive(forwards);
 
-// }
+}
 
-// void ir_right_int(struct device *port_a, struct gpio_callback *cb, u32_t pin)
-// {
-// 	drive(rightwards);
-// 	k_busy_wait(100);
-// 	// drive(forwards);
+void ir_right_int(struct device *port_a, struct gpio_callback *cb, u32_t pin)
+{
+	drive(rightwards);
+	k_busy_wait(100);
+	// drive(forwards);
 
-// }
+}
