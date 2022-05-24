@@ -8,7 +8,7 @@
 #### Zephyr OS
 
 This project is built using the Zephyr Operating System.
-You can find [https://docs.zephyrproject.org/latest/application/index.html#application here] a basic overview of how to build an Application using this OS.
+You can find [here](https://docs.zephyrproject.org/latest/application/index.html#application) a basic overview of how to build an Application using this OS.
 
 #### Mobile Robot
 
@@ -25,7 +25,7 @@ In order to go drive from node to node, the robot will follow the black lines be
 
 #### Microcontroller
 
-The brain of this project is the [https://www.st.com/en/evaluation-tools/nucleo-f446re.html ST Nucleo F446RE board]
+The brain of this project is the [ST Nucleo F446RE board](https://www.st.com/en/evaluation-tools/nucleo-f446re.html) 
 
 #### Sensors
 
@@ -62,8 +62,8 @@ For the control of the direction and speed of the two DC motors, the dual H-Brid
 
 ##### Demo Videos:
 
-[Without Obstacle] https://youtu.be/d9CEZ9sfACA
+[Without Obstacle](https://youtu.be/d9CEZ9sfACA)
 
-[With Obstacle] https://youtu.be/VZWVzdQHuu4
+[With Obstacle](https://youtu.be/VZWVzdQHuu4)
 
 more info: https://wwwvs.cs.hs-rm.de/vs-wiki/index.php/EM2019WSP06
