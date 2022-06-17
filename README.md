@@ -1,7 +1,11 @@
 # Embedded Systems Project WS 2020 
 ![d_bot](https://gitlab.cs.hs-rm.de/mmait001/d_bot/-/raw/master/logo.jpg)
 
+##### Demo Videos:
 
+[Without Obstacle](https://youtu.be/d9CEZ9sfACA)
+
+[With Obstacle](https://youtu.be/VZWVzdQHuu4)
 
 ## delivery bot
 
@@ -60,10 +64,6 @@ For the control of the direction and speed of the two DC motors, the dual H-Brid
 
 
 
-##### Demo Videos:
 
-[Without Obstacle](https://youtu.be/d9CEZ9sfACA)
-
-[With Obstacle](https://youtu.be/VZWVzdQHuu4)
 
 more info: https://wwwvs.cs.hs-rm.de/vs-wiki/index.php/EM2019WSP06
